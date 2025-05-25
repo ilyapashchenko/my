@@ -8,7 +8,7 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background-color: #e6ecf5;
+      background-color: #E5EDF8;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -66,7 +66,7 @@
 
     .button {
       padding: 6px 12px;
-      background-color: #007aff;
+      background-color: #fdf9f1;
       color: white;
       border: none;
       border-radius: 6px;
@@ -78,8 +78,8 @@
       margin-top: 20px;
       padding: 12px;
       font-size: 16px;
-      background-color: #4caf50;
-      color: white;
+      background-color: #fdf9f1;
+      color: black; /here/
       border: none;
       border-radius: 10px;
       cursor: pointer;
@@ -91,7 +91,7 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background-color: #e6ecf5;
+      background-color: #E5EDF8;
       border-radius: 20px;
       box-shadow: 0 0 15px rgba(0,0,0,0.2);
       padding: 20px;
@@ -157,8 +157,9 @@
     <button class="add-button" onclick="openModal()">Добавить</button>
   </div>
 
-  <!-- Модальное окно -->
+  <!-- Модальные окна и оверлей -->
   <div class="overlay" id="overlay" onclick="closeModal()"></div>
+
   <div class="modal" id="addModal">
     <button class="close-btn" onclick="closeModal()">×</button>
     <div class="modal-title">Выберите способ добавления</div>
@@ -166,25 +167,29 @@
     <button class="modal-button" onclick="addByID()">2) Добавить при помощи ID</button>
   </div>
 
-  <script>
-    const services = [
-      'Сервис "первый"',
-      'Сервис "второй"',
-      'Сервис "третий"',
-      'Сервис "четвёртый"'
-    ];
+  <div class="modal" id="idInputModal">
+    <button class="close-btn" onclick="closeModal()">×</button>
+    <div class="modal-title">Введите ID</div>
+    <input id="serviceIdInput" type="text" placeholder="Например: 12345" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #ccc; margin-bottom: 12px;" />
+    <button class="add-button" onclick="submitId()">Добавить</button>
+  </div>
 
+  <script>
+    const services = []; // Изначально пусто
     const serviceList = document.getElementById('serviceList');
 
-    services.forEach(name => {
-      const item = document.createElement('div');
-      item.className = 'service-item';
-      item.innerHTML = `
-        <div class="service-name">${name}</div>
-        <button class="button" onclick="onBook('${name}')">Записаться</button>
-      `;
-      serviceList.appendChild(item);
-    });
+    function renderServices() {
+      serviceList.innerHTML = ''; // Очистка
+      services.forEach(name => {
+        const item = document.createElement('div');
+        item.className = 'service-item';
+        item.innerHTML = `
+          <div class="service-name">${name}</div>
+          <button class="button" onclick="onBook('${name}')">Записаться</button>
+        `;
+        serviceList.appendChild(item);
+      });
+    }
 
     function onBook(serviceName) {
       alert(`Запись на ${serviceName}`);
@@ -197,19 +202,38 @@
 
     function closeModal() {
       document.getElementById('addModal').style.display = 'none';
+      document.getElementById('idInputModal').style.display = 'none';
       document.getElementById('overlay').style.display = 'none';
     }
 
     function addByQR() {
       closeModal();
-      alert("Сканирование QR-кода (здесь будет функционал)");
+      const name = prompt("Введите название сервиса (QR):");
+      if (name) {
+        services.push(name);
+        renderServices();
+      }
     }
 
     function addByID() {
-      closeModal();
-      alert("Ввод ID (здесь будет функционал)");
+      document.getElementById('addModal').style.display = 'none';
+      document.getElementById('idInputModal').style.display = 'flex';
     }
+
+    function submitId() {
+      const input = document.getElementById('serviceIdInput');
+      const id = input.value.trim();
+      if (id) {
+        services.push(`Сервис по ID: ${id}`);
+        renderServices();
+        input.value = ''; // очистить поле
+        closeModal();
+      } else {
+        alert('Пожалуйста, введите ID');
+      }
+    }
+
+    renderServices(); // запускаем рендер
   </script>
 </body>
 </html>
-
