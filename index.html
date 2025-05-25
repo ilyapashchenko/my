@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mini App</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #e6ecf5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 400px;
+      margin-top: 20px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .username {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      background-color: #ccc;
+      border-radius: 50%;
+    }
+
+    .title {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    .service-list {
+      max-height: 300px;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+
+    .service-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: white;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .service-name {
+      font-size: 16px;
+    }
+
+    .button {
+      padding: 6px 12px;
+      background-color: #007aff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .add-button {
+      width: 100%;
+      margin-top: 20px;
+      padding: 12px;
+      font-size: 16px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="username">Name</div>
+      <div class="avatar"></div>
+    </div>
+
+    <div class="title">Ваши сервисы:</div>
+    <div class="service-list" id="serviceList">
+      <!-- Сервисы подставляются здесь -->
+    </div>
+
+    <button class="add-button" onclick="onAdd()">Добавить</button>
+  </div>
+
+  <script>
+    const services = [
+      'Сервис "первый"',
+      'Сервис "второй"',
+      'Сервис "третий"',
+      'Сервис "четвёртый"'
+    ];
+
+    const serviceList = document.getElementById('serviceList');
+
+    services.forEach(name => {
+      const item = document.createElement('div');
+      item.className = 'service-item';
+      item.innerHTML = `
+        <div class="service-name">${name}</div>
+        <button class="button" onclick="onBook('${name}')">Записаться</button>
+      `;
+      serviceList.appendChild(item);
+    });
+
+    function onBook(serviceName) {
+      alert(`Запись на ${serviceName}`);
+      // Тут может быть логика вызова Telegram API / отправка данных
+    }
+
+    function onAdd() {
+      alert("Добавить новый сервис");
+      // Тут может быть логика открытия формы
+    }
+  </script>
+</body>
+</html>
