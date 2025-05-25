@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mini App</title>
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
     body {
       margin: 0;
@@ -19,10 +18,6 @@
       width: 90%;
       max-width: 400px;
       margin-top: 20px;
-    }
-
-    .hidden {
-      display: none;
     }
 
     .header {
@@ -90,85 +85,85 @@
       cursor: pointer;
     }
 
-    .modal, .scanner {
+    /* Модальное окно */
+    .modal {
       position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background-color: rgba(0, 0, 0, 0.6);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 10;
-    }
-
-    .modal-content {
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       background-color: #e6ecf5;
       border-radius: 20px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
       padding: 20px;
-      text-align: center;
+      z-index: 1000;
       width: 90%;
-      max-width: 300px;
-      position: relative;
+      max-width: 320px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
     }
 
-    .modal-content button {
-      margin-top: 10px;
-      width: 100%;
-      padding: 10px;
+    .modal-title {
+      font-size: 18px;
+      margin-bottom: 16px;
+    }
+
+    .modal-button {
+      background-color: white;
+      border: 1px solid #ccc;
       border-radius: 10px;
-      font-size: 14px;
+      padding: 10px;
+      width: 100%;
+      margin: 6px 0;
+      text-align: left;
       cursor: pointer;
     }
 
     .close-btn {
       position: absolute;
-      top: 10px;
-      right: 15px;
-      font-size: 22px;
-      cursor: pointer;
+      top: 8px;
+      right: 12px;
+      font-size: 20px;
+      font-weight: bold;
       background: none;
       border: none;
-      color: white;
+      cursor: pointer;
     }
 
-    .scanner {
-      flex-direction: column;
-      background-color: #222;
-    }
-
-    #reader-container {
-      margin-top: 50px;
-      border-radius: 10px;
-      overflow: hidden;
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.3);
+      z-index: 999;
+      display: none;
     }
   </style>
 </head>
 <body>
-  <div class="container" id="mainPage">
+  <div class="container">
     <div class="header">
       <div class="username">Name</div>
       <div class="avatar"></div>
     </div>
 
     <div class="title">Ваши сервисы:</div>
-    <div class="service-list" id="serviceList"></div>
-    <button class="add-button" onclick="showAddModal()">Добавить</button>
+    <div class="service-list" id="serviceList">
+      <!-- Сервисы подставляются здесь -->
+    </div>
+
+    <button class="add-button" onclick="openModal()">Добавить</button>
   </div>
 
   <!-- Модальное окно -->
-  <div class="modal hidden" id="addModal">
-    <div class="modal-content">
-      <button class="close-btn" onclick="closeModal()">×</button>
-      <p>Выберите способ добавления</p>
-      <button onclick="startQRScanner()">1) Добавить при помощи QR кода</button>
-      <button onclick="alert('Добавление по ID пока не реализовано')">2) Добавить при помощи ID</button>
-    </div>
-  </div>
-
-  <!-- Окно сканера -->
-  <div class="scanner hidden" id="qrScanner">
-    <button class="close-btn" onclick="stopQRScanner()">×</button>
-    <div id="reader-container"></div>
+  <div class="overlay" id="overlay" onclick="closeModal()"></div>
+  <div class="modal" id="addModal">
+    <button class="close-btn" onclick="closeModal()">×</button>
+    <div class="modal-title">Выберите способ добавления</div>
+    <button class="modal-button" onclick="addByQR()">1) Добавить при помощи QR кода</button>
+    <button class="modal-button" onclick="addByID()">2) Добавить при помощи ID</button>
   </div>
 
   <script>
@@ -180,15 +175,8 @@
     ];
 
     const serviceList = document.getElementById('serviceList');
-    const addModal = document.getElementById('addModal');
-    const qrScanner = document.getElementById('qrScanner');
-    const readerContainer = document.getElementById('reader-container');
 
-    let html5QrCode = null;
-
-    services.forEach(name => addService(name));
-
-    function addService(name) {
+    services.forEach(name => {
       const item = document.createElement('div');
       item.className = 'service-item';
       item.innerHTML = `
@@ -196,55 +184,30 @@
         <button class="button" onclick="onBook('${name}')">Записаться</button>
       `;
       serviceList.appendChild(item);
-    }
+    });
 
     function onBook(serviceName) {
       alert(`Запись на ${serviceName}`);
     }
 
-    function showAddModal() {
-      addModal.classList.remove('hidden');
+    function openModal() {
+      document.getElementById('addModal').style.display = 'flex';
+      document.getElementById('overlay').style.display = 'block';
     }
 
     function closeModal() {
-      addModal.classList.add('hidden');
+      document.getElementById('addModal').style.display = 'none';
+      document.getElementById('overlay').style.display = 'none';
     }
 
-    function startQRScanner() {
+    function addByQR() {
       closeModal();
-      qrScanner.classList.remove('hidden');
-      readerContainer.innerHTML = '<div id="reader" style="width: 300px; height: 300px;"></div>';
-      html5QrCode = new Html5Qrcode("reader");
-
-      html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: 250 },
-        (decodedText) => {
-          html5QrCode.stop().then(() => {
-            qrScanner.classList.add('hidden');
-            readerContainer.innerHTML = '';
-            addService(decodedText);
-            alert(`Добавлен новый сервис: ${decodedText}`);
-          });
-        },
-        (errorMessage) => {
-          // игнорируем ошибки сканирования
-        }
-      ).catch(err => {
-        alert("Ошибка камеры: " + err);
-      });
+      alert("Сканирование QR-кода (здесь будет функционал)");
     }
 
-    function stopQRScanner() {
-      if (html5QrCode) {
-        html5QrCode.stop().then(() => {
-          html5QrCode.clear();
-          readerContainer.innerHTML = '';
-          qrScanner.classList.add('hidden');
-        });
-      } else {
-        qrScanner.classList.add('hidden');
-      }
+    function addByID() {
+      closeModal();
+      alert("Ввод ID (здесь будет функционал)");
     }
   </script>
 </body>
