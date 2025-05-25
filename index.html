@@ -128,13 +128,18 @@
       cursor: pointer;
       background: none;
       border: none;
+      color: white;
     }
 
-    #reader {
-      width: 300px;
-      height: 300px;
-      background: white;
-      border-radius: 12px;
+    .scanner {
+      flex-direction: column;
+      background-color: #222;
+    }
+
+    #reader-container {
+      margin-top: 50px;
+      border-radius: 10px;
+      overflow: hidden;
     }
   </style>
 </head>
@@ -150,7 +155,7 @@
     <button class="add-button" onclick="showAddModal()">Добавить</button>
   </div>
 
-  <!-- Modal окно -->
+  <!-- Модальное окно -->
   <div class="modal hidden" id="addModal">
     <div class="modal-content">
       <button class="close-btn" onclick="closeModal()">×</button>
@@ -160,10 +165,10 @@
     </div>
   </div>
 
-  <!-- Страница сканера -->
+  <!-- Окно сканера -->
   <div class="scanner hidden" id="qrScanner">
     <button class="close-btn" onclick="stopQRScanner()">×</button>
-    <div id="reader"></div>
+    <div id="reader-container"></div>
   </div>
 
   <script>
@@ -177,10 +182,11 @@
     const serviceList = document.getElementById('serviceList');
     const addModal = document.getElementById('addModal');
     const qrScanner = document.getElementById('qrScanner');
+    const readerContainer = document.getElementById('reader-container');
 
-    services.forEach(name => {
-      addService(name);
-    });
+    let html5QrCode = null;
+
+    services.forEach(name => addService(name));
 
     function addService(name) {
       const item = document.createElement('div');
@@ -207,35 +213,38 @@
     function startQRScanner() {
       closeModal();
       qrScanner.classList.remove('hidden');
-      const html5QrCode = new Html5Qrcode("reader");
+      readerContainer.innerHTML = '<div id="reader" style="width: 300px; height: 300px;"></div>';
+      html5QrCode = new Html5Qrcode("reader");
 
       html5QrCode.start(
         { facingMode: "environment" },
-        {
-          fps: 10,
-          qrbox: 250
-        },
-        (decodedText, decodedResult) => {
-          // Действие при успешном сканировании
-          html5QrCode.stop();
-          qrScanner.classList.add('hidden');
-          addService(decodedText); // Добавляем как новый сервис
-          alert(`Добавлен сервис: ${decodedText}`);
+        { fps: 10, qrbox: 250 },
+        (decodedText) => {
+          html5QrCode.stop().then(() => {
+            qrScanner.classList.add('hidden');
+            readerContainer.innerHTML = '';
+            addService(decodedText);
+            alert(`Добавлен новый сервис: ${decodedText}`);
+          });
         },
         (errorMessage) => {
-          // Ошибки сканирования можно игнорировать
+          // игнорируем ошибки сканирования
         }
       ).catch(err => {
-        alert("Ошибка при запуске камеры: " + err);
+        alert("Ошибка камеры: " + err);
       });
     }
 
     function stopQRScanner() {
-      qrScanner.classList.add('hidden');
-      Html5Qrcode.getCameras().then(cameras => {
-        const qrCodeScanner = new Html5Qrcode("reader");
-        qrCodeScanner.stop();
-      });
+      if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+          html5QrCode.clear();
+          readerContainer.innerHTML = '';
+          qrScanner.classList.add('hidden');
+        });
+      } else {
+        qrScanner.classList.add('hidden');
+      }
     }
   </script>
 </body>
